@@ -134,6 +134,91 @@ def data_extracting(datas):
         end = time.time()
         print(end - start)
 
+
+def drop_data_extracting(datas):
+    with open("Datasets/2edition/testDataset2", "w", newline='') as csvfile:
+        fieldnames = ["pub_year", "contributions", "collaborations", "total_count", "valid_query"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        # result = pd.DataFrame(columns=["pub_year", "contributions", "collaborations", "total_count", "valid_query"])
+
+        start = time.time()
+
+        year = datas.loc[datas['pub_year'] == 2021]
+        year = year.sort_values('contributions')
+        year.reset_index(inplace=True, drop=True)
+        contributions = year['contributions'].max()
+
+        print("contributions: ")
+        print(contributions)
+        yearCon = year
+
+        for x in range(1, contributions):
+            print("+++++++++++++++++++++++++++++++++++++++++")
+            print(yearCon.size)
+
+            posCon = year[year['contributions'] == x].index.values
+
+            if not np.any(posCon):
+                total_count = yearCon.size
+                if total_count > 400:
+                    valid = False
+                else:
+                    valid = True
+                '''new_row = {"pub_year": 2021, "contributions": x, "collaborations": 1, "total_count": 0}
+                result.loc[result.size] = new_row'''
+                writer.writerow({"pub_year": 2021, "contributions": x, "collaborations": 1,
+                                 "total_count": total_count, "valid_query": valid})
+            else:
+                # yearCon = year.loc[year['contributions'] >= x]
+                yearCon = year.iloc[posCon[0]:]
+                # collaborations = yearCon['collaborations'].max()
+                collaborations = yearCon['collaborations'].max()
+
+                print("contributions: ")
+                print(x)
+                print("collaborations: ")
+                print(collaborations)
+
+                if pd.isna(collaborations):
+                    total_count = yearCon.size
+                    if total_count > 400:
+                        valid = False
+                    else:
+                        valid = True
+                    '''new_row = {"pub_year": 2021, "contributions": x, "collaborations": 1, "total_count": 0}
+                    result.loc[result.size] = new_row'''
+                    writer.writerow({"pub_year": 2021, "contributions": x, "collaborations": 1,
+                                     "total_count": total_count, "valid_query": valid})
+                else:
+                    for y in range(1, collaborations):
+                        yearCon = yearCon.sort_values('collaborations')
+                        yearCon.reset_index(inplace=True, drop=True)
+
+                        posColl = yearCon[yearCon['collaborations'] == y].index.values
+                        # yearColl = yearCon.loc[yearCon['collaborations'] <= y]
+
+                        if np.any(posColl):
+                            yearColl = yearCon.iloc[posColl[0]:]
+                        total_count = yearColl.size
+
+                        if total_count > 400:
+                            valid = False
+                        else:
+                            valid = True
+
+                        writer.writerow({"pub_year": 2021, "contributions": x, "collaborations": y,
+                                         "total_count": total_count, "valid_query": valid})
+                        '''new_row = {"pub_year": 2021, "contributions": x, "collaborations": y,
+                                   "total_count": total_count, "valid_query": valid}
+                        result.loc[result.size] = new_row'''
+                        # result = result.append(new_row, ignore_index=True)
+
+    #print(result)
+    end = time.time()
+    print(end - start)
+
     #Write dataset to csv
     #result.to_csv('/Users/jrodriguez/PycharmProjects/LandingFunction/Datasets/2edition/testDataset2')
 
